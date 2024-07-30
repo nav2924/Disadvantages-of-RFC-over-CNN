@@ -137,7 +137,21 @@ model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentro
 
 
 # history = model.fit(train_ds,epochs=10,validation_data=validation_ds)
-history = model.fit(train_data, epochs=5, validation_data=val_data, callbacks=[EarlyStopping(patience=0)])
+history = model.fit(train_data, epochs=10, validation_data=val_data, callbacks=[EarlyStopping(patience=0)])
+
+plt.plot(history.history['accuracy'], label='Training Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
+
+plt.plot(history.history['loss'], label='Training Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
 
 # Evaluate the model on the validation data
 evaluation = model.evaluate(val_data)
@@ -145,3 +159,26 @@ evaluation = model.evaluate(val_data)
 # Print the evaluation metrics
 print("Validation Loss:", evaluation[0])
 print("Validation Accuracy:", evaluation[1])
+
+# Example data from history
+epochs = range(1, len(history.history['accuracy']) + 1)
+train_accuracy = history.history['accuracy']  # Training accuracy over epochs
+val_accuracy = history.history['val_accuracy']  # Validation accuracy over epochs
+
+plt.figure(figsize=(12, 6))
+
+# Plotting training and validation accuracy over epochs
+plt.plot(epochs, train_accuracy, 'b-', label='Training Accuracy')
+plt.plot(epochs, val_accuracy, 'r-', label='Validation Accuracy')
+
+# Adding titles and labels
+plt.title('CNN Model Accuracy Over Epochs')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy (%)')
+plt.ylim(0, 1)  # Accuracy values are between 0 and 1
+plt.xticks(epochs)
+
+# Adding grid, legend, and showing the plot
+plt.grid(True)
+plt.legend()
+plt.show()
