@@ -1,3 +1,10 @@
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Model
+from tensorflow.keras.applications import DenseNet121
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+
 import os  # Operating system interfaces
 import tensorflow as tf                                    # TensorFlow deep learning framework
 import matplotlib.pyplot as plt                            # Plotting library
@@ -10,7 +17,6 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator  # Data augm
 from tensorflow.keras.layers import Dense, Flatten, Dropout, GlobalAveragePooling2D, AveragePooling2D, MaxPooling2D, BatchNormalization  
 # Various types of layers for building neural networks
 from tensorflow.keras.applications import DenseNet121, EfficientNetB4, Xception, VGG16, VGG19   # Pre-trained models for transfer learning
-
 
 train_data = tf.keras.utils.image_dataset_from_directory(
     'tomato/train',
@@ -89,6 +95,34 @@ conv_base = DenseNet121(
 )
 
 conv_base.trainable = False
+
+# Function to extract features using DenseNet121
+def extract_features(data):
+    features = []
+    labels = []
+    for images, label in data:
+        feature_batch = conv_base.predict(images)
+        features.append(feature_batch)
+        labels.append(label)
+    return np.vstack(features), np.vstack(labels)
+
+# Extract features from the training and validation data
+train_features, train_labels = extract_features(train_data)
+val_features, val_labels = extract_features(val_data)
+
+# Flatten the labels for compatibility with RandomForestClassifier
+train_labels = np.argmax(train_labels, axis=1)
+val_labels = np.argmax(val_labels, axis=1)
+
+# Train the Random Forest classifier
+rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_classifier.fit(train_features, train_labels)
+
+val_predictions = rf_classifier.predict(val_features)
+
+val_accuracy = accuracy_score(val_labels, val_predictions)
+
+print("Validation Accuracy:", val_accuracy)
 
 model = Sequential()
 model.add(conv_base)
