@@ -182,3 +182,21 @@ plt.xticks(epochs)
 plt.grid(True)
 plt.legend()
 plt.show()
+
+models = ['Random Forest', 'CNN']
+accuracies = [88.0, 92.0]  # Replace these with your actual accuracy values
+
+plt.figure(figsize=(10, 6))
+
+# Bar plot for accuracy comparison
+plt.bar(models, accuracies, color=['blue', 'green'])
+
+# Adding titles and labels
+plt.title('Comparison of Model Accuracy')
+plt.xlabel('Model')
+plt.ylabel('Validation Accuracy (%)')
+plt.ylim(80, 100)  # Adjust the y-axis limit to fit your accuracy range
+
+# Show the plot
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.show()  
