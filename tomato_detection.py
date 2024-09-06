@@ -1,9 +1,8 @@
 import numpy as np
-import tensorflow as tf
-from tensorflow.keras.models import Model
 from tensorflow.keras.applications import DenseNet121
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
+from PIL import Image
 
 import os  # Operating system interfaces
 import tensorflow as tf                                    # TensorFlow deep learning framework
@@ -14,9 +13,7 @@ from tensorflow.keras.optimizers import Adam               # Adam optimizer for 
 from tensorflow.keras.callbacks import EarlyStopping       # Early stopping callback for model training
 from tensorflow.keras.regularizers import l1, l2           # L1 and L2 regularization for model regularization
 from tensorflow.keras.preprocessing.image import ImageDataGenerator  # Data augmentation and preprocessing for images
-from tensorflow.keras.layers import Dense, Flatten, Dropout, GlobalAveragePooling2D, AveragePooling2D, MaxPooling2D, BatchNormalization  
-# Various types of layers for building neural networks
-from tensorflow.keras.applications import DenseNet121, EfficientNetB4, Xception, VGG16, VGG19   # Pre-trained models for transfer learning
+from tensorflow.keras.layers import Dense, Dropout, MaxPooling2D, BatchNormalization , Conv2D , Flatten
 
 train_data = tf.keras.utils.image_dataset_from_directory(
     'tomato/train',
@@ -86,7 +83,6 @@ for i in range(6):
 plt.tight_layout()
 plt.show()
 
-
 conv_base = DenseNet121(
     weights='imagenet',
     include_top = False,
@@ -101,9 +97,13 @@ def extract_features(data):
     features = []
     labels = []
     for images, label in data:
-        feature_batch = conv_base.predict(images)
-        features.append(feature_batch)
-        labels.append(label)
+        try :
+            feature_batch = conv_base.predict(images)
+            features.append(feature_batch)
+            labels.append(label)
+        except Exception as e:
+            print(f"Error occurred while processing {images.file_path}: {e}")
+            continue
     return np.vstack(features), np.vstack(labels)
 
 # Extract features from the training and validation data
@@ -124,6 +124,35 @@ val_accuracy = accuracy_score(val_labels, val_predictions)
 
 print("Validation Accuracy:", val_accuracy)
 
+# Define a simple CNN model
+regular_cnn_model = Sequential([
+    Conv2D(32, (3, 3), activation='relu', input_shape=(256, 256, 3)),
+    MaxPooling2D(pool_size=(2, 2)),
+    BatchNormalization(),
+    Conv2D(64, (3, 3), activation='relu'),
+    MaxPooling2D(pool_size=(2, 2)),
+    BatchNormalization(),
+    Conv2D(128, (3, 3), activation='relu'),
+    MaxPooling2D(pool_size=(2, 2)),
+    BatchNormalization(),
+    Flatten(),
+    Dense(256, activation='relu'),
+    Dropout(0.5),
+    Dense(10, activation='sigmoid')
+])
+
+regular_cnn_model.compile(optimizer=Adam(learning_rate=0.0001), loss='binary_crossentropy', metrics=['accuracy'])
+
+# Train the regular CNN model
+history_regular_cnn = regular_cnn_model.fit(train_data, epochs=10, validation_data=val_data, callbacks=[EarlyStopping(patience=3)])
+
+# Evaluate the regular CNN model on the validation data
+evaluation_regular_cnn = regular_cnn_model.evaluate(val_data)
+
+# Print the evaluation metrics
+print("Regular CNN Validation Loss:", evaluation_regular_cnn[0])
+print("Regular CNN Validation Accuracy:", evaluation_regular_cnn[1])
+
 model = Sequential()
 model.add(conv_base)
 model.add(BatchNormalization())
@@ -133,10 +162,9 @@ model.add(BatchNormalization())
 model.add(Dense(120, activation='relu'))
 model.add(Dense(10, activation='softmax'))
 
-model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=Adam(learning_rate=0.0001), loss='binary_crossentropy', metrics=['accuracy'])
 
 
-# history = model.fit(train_ds,epochs=10,validation_data=validation_ds)
 history = model.fit(train_data, epochs=10, validation_data=val_data, callbacks=[EarlyStopping(patience=0)])
 
 plt.plot(history.history['accuracy'], label='Training Accuracy')
@@ -183,13 +211,20 @@ plt.grid(True)
 plt.legend()
 plt.show()
 
-models = ['Random Forest', 'CNN']
-accuracies = [88.0, 92.0]  # Replace these with your actual accuracy values
+import matplotlib.pyplot as plt
 
+# Ensure accuracies are numerical values
+val_accuracy_rf = 87.5  # Replace with the actual Random Forest accuracy percentage
+evaluation_cnn_accuracy = 94.400  # Replace with the actual DenseNet CNN accuracy percentage
+evaluation_regular_cnn_accuracy = 88.099  # Replace with the actual Regular CNN accuracy percentage
+
+# Models and their accuracies
+models = ['Random Forest', 'DenseNet CNN', 'Regular CNN']
+accuracies = [val_accuracy_rf, evaluation_cnn_accuracy, evaluation_regular_cnn_accuracy]
+
+# Plot comparison of all models
 plt.figure(figsize=(10, 6))
-
-# Bar plot for accuracy comparison
-plt.bar(models, accuracies, color=['blue', 'green'])
+plt.bar(models, accuracies, color=['blue', 'green', 'orange'])
 
 # Adding titles and labels
 plt.title('Comparison of Model Accuracy')
@@ -199,4 +234,4 @@ plt.ylim(80, 100)  # Adjust the y-axis limit to fit your accuracy range
 
 # Show the plot
 plt.grid(axis='y', linestyle='--', alpha=0.7)
-plt.show()  
+plt.show()
