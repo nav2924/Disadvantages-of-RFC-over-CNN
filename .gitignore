@@ -1,2 +1,64 @@
 tomato/
 dataset_2/
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.pyo
+
+# Jupyter notebooks checkpoints (optional)
+.ipynb_checkpoints/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Logs and outputs
+*.log
+*.out
+*.tmp
+
+# TensorFlow and Keras artifacts
+*.h5
+*.ckpt
+*.pb
+*.tflite
+saved_model/
+
+# Model predictions and output data
+*.csv
+*.json
+*.npy
+*.npz
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE and editor configs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Image files used during testing or Tkinter
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# PyInstaller build artifacts
+build/
+dist/
+*.spec
+
+# Pip dependency file locks
+poetry.lock
+Pipfile.lock
+
+# dotenv / secrets (if any)
+.env
