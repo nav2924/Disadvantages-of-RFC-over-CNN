@@ -26,6 +26,7 @@ env/
 *.ckpt
 *.pb
 *.tflite
+*.pth
 saved_model/
 
 # Model predictions and output data
